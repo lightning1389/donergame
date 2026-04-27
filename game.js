@@ -429,65 +429,23 @@ function switchCustomer(dir) {
     if (cust) showSpeechBubble(cust, cust.dialogue);
 }
 
-// ===== SPEECH BUBBLE SYSTEM + TEXT-TO-SPEECH =====
+// ===== SPEECH BUBBLE SYSTEM =====
 let activeSpeechTimer = null;
-let ttsVoices = [];
-let ttsReady = false;
-
-// Load voices (async on some browsers)
-function loadVoices() {
-    ttsVoices = speechSynthesis.getVoices();
-    ttsReady = ttsVoices.length > 0;
-}
-if ('speechSynthesis' in window) {
-    loadVoices();
-    speechSynthesis.onvoiceschanged = loadVoices;
-}
-
-function speakText(text, custType) {
-    if (!('speechSynthesis' in window)) return;
-    // Cancel any ongoing speech
-    speechSynthesis.cancel();
-
-    const utter = new SpeechSynthesisUtterance(text);
-
-    // German voices only — all dialogues are in German
-    let voice = ttsVoices.find(v => v.lang === 'de-DE');
-    if (!voice) voice = ttsVoices.find(v => v.lang.startsWith('de'));
-    if (voice) utter.voice = voice;
-    utter.lang = 'de-DE';
-
-    // Vary pitch and rate by customer type for personality
-    const vibe = custType ? custType.vibe : 'chill';
-    switch (vibe) {
-        case 'impatient': utter.rate = 1.4; utter.pitch = 1.3; break;
-        case 'demanding': utter.rate = 0.85; utter.pitch = 0.7; break;
-        case 'chatty':    utter.rate = 1.15; utter.pitch = 1.1; break;
-        case 'nice':      utter.rate = 1.0;  utter.pitch = 1.2; break;
-        case 'polite':    utter.rate = 0.95; utter.pitch = 1.0; break;
-        case 'confused':  utter.rate = 0.9;  utter.pitch = 1.15; break;
-        case 'loyal':     utter.rate = 1.05; utter.pitch = 0.9; break;
-        default:          utter.rate = 1.05; utter.pitch = 1.0; break;
-    }
-    // Add slight randomness
-    utter.rate += (Math.random() - 0.5) * 0.15;
-    utter.pitch += (Math.random() - 0.5) * 0.15;
-    utter.volume = 0.85;
-
-    speechSynthesis.speak(utter);
-}
 
 function showSpeechBubble(cust, text) {
     if (!cust) return;
     cust.lastSpeech = text;
-    // Speak it out loud!
-    speakText(text, cust.type);
+    // Play speech blip sounds (like talking)
+    const words = text.split(' ').length;
+    for (let i = 0; i < Math.min(words, 6); i++) {
+        setTimeout(() => Audio.speech(), i * 60);
+    }
     renderCustomers();
-    // Auto-hide speech bubble after speech ends or timeout
+    // Auto-hide speech after a while
     if (activeSpeechTimer) clearTimeout(activeSpeechTimer);
     activeSpeechTimer = setTimeout(() => {
         if (cust && !cust.leaving) { cust.lastSpeech = ''; renderCustomers(); }
-    }, 4500);
+    }, 3500);
 }
 
 function updateCustomers(now) {
@@ -1211,7 +1169,6 @@ function gameOver() {
     S.running = false;
     FX.stop();
     Audio.gameOver();
-    if ('speechSynthesis' in window) speechSynthesis.cancel();
 
     const isNew = S.score > S.highScore;
     if (isNew) { S.highScore = S.score; saveHS(); setTimeout(() => Audio.highScore(), 800); }
