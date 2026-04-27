@@ -112,11 +112,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f0a06;
 .cust-card.active{border-color:var(--gold);box-shadow:0 0 12px rgba(255,215,0,.35)}
 .cust-card.leaving{animation:custLeave .6s ease-in forwards}
 @keyframes custLeave{0%{transform:translateY(0);opacity:1}100%{transform:translateY(-40px) scale(.8);opacity:0}}
-.cust-top{display:flex;align-items:center;gap:3px}
-.cust-avatar{font-size:1.3rem}
+.cust-top{display:flex;align-items:center;gap:3px;overflow:hidden}
+.cust-avatar{font-size:1.3rem;line-height:1;flex-shrink:0}
 .cust-type{font-size:.38rem;color:var(--cream);background:rgba(255,255,255,.08);padding:1px 4px;
     border-radius:3px;letter-spacing:1px;font-weight:bold}
-.cust-mood{font-size:.65rem;margin-left:auto}
+.cust-mood{font-size:.65rem;margin-left:auto;flex-shrink:0;line-height:1}
 .cust-switch-hint{font-size:.35rem;color:var(--dim);opacity:.5}
 .cust-active-badge{font-size:.4rem;color:var(--gold);animation:activePulse .6s infinite alternate}
 @keyframes activePulse{0%{opacity:.5}100%{opacity:1}}
@@ -163,8 +163,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f0a06;
 
 /* Assembly station */
 .st-assembly .st-head{color:var(--assembly-accent);border-color:rgba(230,180,34,.2)}
-#order-checklist{display:flex;flex-wrap:wrap;gap:3px;justify-content:center;margin-bottom:4px;min-height:28px}
-.oc-item{font-size:1.1rem;position:relative;opacity:.4;transition:opacity .2s,transform .2s}
+#order-checklist{display:flex;flex-wrap:wrap;gap:3px;justify-content:center;margin-bottom:4px;min-height:28px;overflow:hidden}
+.oc-item{font-size:1.1rem;position:relative;opacity:.4;transition:opacity .2s,transform .2s;line-height:1}
 .oc-item.needed{opacity:1}
 .oc-item.done{opacity:.35;transform:scale(.8)}
 .oc-item.done::after{content:'✓';position:absolute;top:-2px;right:-5px;font-size:.55rem;
@@ -211,7 +211,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f0a06;
 /* Drinks station */
 .st-drinks .st-head{color:var(--drink-accent);border-color:rgba(74,154,255,.2)}
 #drink-needed{font-size:1.4rem;text-align:center;min-height:32px;display:flex;align-items:center;
-    justify-content:center;gap:4px}
+    justify-content:center;gap:4px;overflow:hidden;line-height:1}
 #drink-status{font-size:.5rem;text-align:center;color:var(--dim);min-height:14px}
 .drink-btns{display:flex;gap:2px;padding:3px}
 .drink-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:3px}
@@ -232,7 +232,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f0a06;
 /* Feedback overlay */
 #feedback{position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);font-size:2rem;
     font-weight:bold;pointer-events:none;opacity:0;z-index:150;
-    text-shadow:0 0 15px currentColor,0 2px 4px rgba(0,0,0,.5);white-space:nowrap}
+    text-shadow:0 0 15px currentColor,0 2px 4px rgba(0,0,0,.5);white-space:nowrap;
+    max-width:90%;overflow:hidden;text-overflow:ellipsis}
 .fb-perfect{color:var(--gold);animation:fbPerf 1s ease-out forwards}
 @keyframes fbPerf{0%{opacity:1;transform:translate(-50%,-50%) scale(.3) rotate(-10deg)}
     15%{transform:translate(-50%,-50%) scale(1.4) rotate(3deg);opacity:1}

@@ -35,90 +35,90 @@ const CUST_TYPES = [
 // ===== CUSTOMER DIALOGUES (German-Turkish mix) =====
 // Each has: text, mood ('enter'=arrival, 'wait'=impatient, 'happy'=served, 'angry'=left)
 const DIALOGUES_ENTER = [
-    "Bruder, einmal Döner mit allem, scharf, aber nicht zu scharf!",
-    "Chef, mach schnell, mein Bus kommt! Yallah!",
-    "Mit ohne Zwiebeln… ama biraz Zwiebeln tamam mı?",
-    "Vallahi bester Döner hier, ama bugün az et var mı?",
-    "Abi, Ayran buz gibi olsun, yoksa kriz çıkar!",
-    "Ich zahl Karte… ya da nakit… bekle bi…",
-    "Acı olsun ama öyle çok da olmasın, anlıyor musun?",
-    "Ich komm seit 10 Jahren her, mach korrekt kardeşim.",
-    "Extra Soße, ama so dass es nicht runterläuft canım!",
-    "Rotkraut yok! Geçen sefer travma geçirdim.",
-    "Chef, her zamanki gibi yap — biliyorsun.",
-    "Ramazan'dan sonra açlık gibi, stabil mach Bruder.",
-    "Vegan var mı? ...Şaka şaka, extra et lütfen!",
-    "Doktorum az döner dedi. Ben de yeni doktor dedim.",
-    "Döner ohne Salat? Evet, tehlikeli yaşıyorum.",
-    "İki tane yap, biri babaanne için.",
-    "Geçen hafta daha iyiydi, sadece söylüyorum.",
-    "Bir kere alles, ama sevmediğim şeyler ohne.",
-    "Döner macht schöner — bana bak mesela!",
-    "Soßeden kalp yapabilir misin? Instagram için!",
-    "Helal mi bu? ...Tabi ki helal ya!",
-    "Bir Döner ama sevgiyle yapılmış olsun!",
-    "Döner-Radarım beni buraya getirdi kardeşim.",
-    "Üç döner. Hepsi benim. Yargılama.",
-    "Yasal sınır kadar et koy lütfen.",
-    "Tomate yok, alerjim var... yok la, sevmiyorum.",
-    "Az önce yemek yedim... ama neyse.",
-    "Çok Soße, ama çok değil. Anlıyorsun.",
-    "Selam, ilk defa geldim. İyi bir şey yap.",
-    "Lan ich warte schon seit... jetzt.",
-    "Hep zamanki gibi yap. Hiç gelmedim buraya.",
-    "Güzelce doldur, derdim var benim.",
-    "Soğan olmasın, Date'im var gleich.",
-    "Kardeşim, ich schwör, senin dönerin her şeyi iyileştirir.",
-    "Klasiği bir kez, mutluluk gözyaşıyla.",
-    "Afiyet olsun diyorsun sonra, değil mi? Bekliyorum.",
-    "Bir çay da koy yanına, üşüdüm bugün.",
-    "Habibi, mach mir den besten Döner deines Lebens!",
-    "Tam acılı yap, beni tanımıyor musun?",
-    "Ya Döner ya ölüm, başka seçenek yok.",
-    "Efendim, bir Döner bitte... mit Liebe und biraz acı.",
-    "Usta, ellerine sağlık, daha yapmadın ama şimdiden!",
-    "Ich nehm das Übliche... also was Gutes halt.",
-    "Moruk, bugün ne varsa hepsini koy.",
-    "Bismillah, bir Döner... ama düzgün yap ha!",
-    "Can I have a Döner? ...Spaß, natürlich ALLES drauf!",
-    "Abi, bu seferki bedava mı? ...Şaka şaka, neyse.",
-    "Bak şimdi, benim babam da dönerci, ama seninkisi farklı.",
+    "Bruder, einmal Döner mit allem, scharf aber nicht zu scharf!",
+    "Chef, mach schnell, mein Bus kommt gleich!",
+    "Mit ohne Zwiebeln… also ein bisschen Zwiebeln ist okay.",
+    "Wallah bester Döner hier, aber heute wenig Fleisch oder was?",
+    "Ayran eiskalt bitte, sonst gibt es Stress!",
+    "Ich zahl mit Karte… oder Bar… warte kurz…",
+    "Scharf soll es sein, aber nicht so richtig, verstehst du?",
+    "Ich komm seit zehn Jahren her, mach mal korrekt bitte.",
+    "Extra Soße, aber so dass es nicht runterläuft bitte!",
+    "Kein Rotkraut! Letztes Mal war ich traumatisiert.",
+    "Chef, wie immer bitte — du weißt schon.",
+    "Nach dem Fasten hab ich Hunger wie ein Wolf, mach stabil Bruder.",
+    "Gibt es was Veganes? ...Spaß, extra Fleisch bitte!",
+    "Mein Arzt sagt weniger Döner. Ich hab jetzt einen neuen Arzt.",
+    "Döner ohne Salat? Ja, ich lebe gefährlich.",
+    "Zwei Stück bitte, eins für die Oma.",
+    "Letzte Woche war es besser, sag ich nur.",
+    "Einmal alles, aber ohne die Sachen die ich nicht mag.",
+    "Döner macht schöner — schau mich an zum Beispiel!",
+    "Kannst du ein Herz aus Soße machen? Für Instagram!",
+    "Ist das Halal? ...Na klar ist das Halal!",
+    "Einen Döner aber mit Liebe gemacht bitte!",
+    "Mein Döner-Radar hat mich hierher geführt Bruder.",
+    "Drei Döner. Alle für mich. Nicht urteilen.",
+    "So viel Fleisch wie erlaubt bitte.",
+    "Keine Tomaten, ich hab eine Allergie... nee, mag ich einfach nicht.",
+    "Ich hab gerade erst gegessen... aber egal.",
+    "Viel Soße, aber nicht zu viel. Du verstehst.",
+    "Hallo, bin zum ersten Mal hier. Mach was Gutes!",
+    "Ich warte schon seit... jetzt gerade erst.",
+    "Wie immer bitte. Ich war noch nie hier.",
+    "Schön voll machen bitte, ich hab Kummer.",
+    "Keine Zwiebeln, ich hab gleich ein Date.",
+    "Ich schwöre, dein Döner heilt alles Bruder.",
+    "Einmal den Klassiker, mit Freudentränen bitte.",
+    "Du sagst nachher Guten Appetit oder? Ich warte drauf.",
+    "Mach noch einen Tee dazu bitte, mir ist kalt heute.",
+    "Mach mir den besten Döner deines Lebens!",
+    "Richtig scharf bitte, kennst du mich nicht?",
+    "Entweder Döner oder Tod, es gibt keine andere Wahl.",
+    "Einen Döner bitte... mit Liebe und ein bisschen Schärfe.",
+    "Meister, danke schon im Voraus, obwohl du noch gar nicht angefangen hast!",
+    "Ich nehm das Übliche... also irgendwas Gutes halt.",
+    "Alter, heute alles drauf was du hast.",
+    "Einen Döner... aber ordentlich bitte!",
+    "Kann ich einen Döner haben? ...Spaß, natürlich alles drauf!",
+    "Ist der diesmal umsonst? ...War nur Spaß, naja.",
+    "Also mein Vater ist auch Dönermann, aber deiner ist anders.",
 ];
 const DIALOGUES_WAIT = [
-    "Abi, çabuk ol, sabrım tükeniyor!",
-    "Bruder, mein Döner wächst nicht im Garten!",
-    "Hellooo? Ich warte hier!",
-    "Ya bu kadar bekletilir mi, Allah aşkına?",
+    "Bruder, beeil dich, meine Geduld ist am Ende!",
+    "Mein Döner wächst nicht im Garten!",
+    "Hallo? Ich warte hier!",
+    "Wie lange kann das denn noch dauern, um Himmels willen?",
     "Mein Magen denkt mein Hals ist abgeschnitten!",
-    "Yani bir döner ne kadar sürebilir ki?!",
-    "Ich geh gleich zu Burger King, wallah!",
-    "Tick tock, Bruder, tick tock...",
-    "Benim öğle arası bitmek üzere, acele et!",
-    "Schneller, schneller! Benim otobüs kaçıyor!",
-    "Bir döner için bu kadar beklenmez ya!",
-    "Arabam çift sıra park, acil lazım!",
+    "Also wie lange kann ein Döner denn dauern?!",
+    "Ich geh gleich zu Burger King, ich schwöre!",
+    "Tick tack, Bruder, tick tack...",
+    "Meine Mittagspause ist gleich vorbei, schneller bitte!",
+    "Schneller, schneller! Mein Bus fährt gleich!",
+    "Für einen Döner wartet man doch nicht so lange!",
+    "Mein Auto steht in zweiter Reihe, es eilt!",
 ];
 const DIALOGUES_HAPPY = [
-    "Eyvallah Bruder, perfekt! 👌",
-    "Ellerine sağlık! Muhteşem!",
-    "DAS ist ein Döner! Teşekkürler!",
-    "Hep buraya gelirim, en iyisi bu!",
-    "Mashallah, çok güzel olmuş!",
-    "Danke Chef, afiyet bana!",
-    "5 Sterne auf Google, söz veriyorum!",
-    "Bunu yaptın ha! Helal olsun!",
-    "Mükemmel! Sana nikah şekeri getiricem!",
-    "Abi sen adamsın, kolay gelsin!",
+    "Danke Bruder, perfekt!",
+    "Großartig gemacht! Wunderschön!",
+    "DAS ist ein Döner! Vielen Dank!",
+    "Ich komm immer wieder, der beste hier!",
+    "Wunderbar, richtig gut geworden!",
+    "Danke Chef, guten Appetit an mich!",
+    "Fünf Sterne auf Google, versprochen!",
+    "Du hast es drauf! Respekt!",
+    "Perfekt! Ich bring dir Hochzeitskekse mit!",
+    "Du bist der Beste, gute Arbeit!",
 ];
 const DIALOGUES_ANGRY = [
-    "Hadi ya, ben gidiyorum! Tschüss!",
-    "Bu kadar beklenmez, hadi görüşürüz!",
-    "Bir daha gelmem! ...Belki yarın.",
-    "Yok artık, aç kalırım daha iyi!",
-    "Ich geh zu einem RICHTIGEN Dönerci!",
-    "Baba sana söyleyeceğim bunu, bekle!",
-    "Google'a 1 Stern! ...Nein, 2, Döner war immer gut.",
-    "Böyle iş olmaz kardeşim!",
+    "Na gut, ich geh! Tschüss!",
+    "So lange wartet man doch nicht, bis dann!",
+    "Ich komm nie wieder! ...Vielleicht morgen.",
+    "Nee jetzt reicht es, lieber hungrig bleiben!",
+    "Ich geh zu einem RICHTIGEN Dönerladen!",
+    "Das erzähl ich meinem Vater, warte nur!",
+    "Einen Stern auf Google! ...Nein, zwei, Döner war immer gut.",
+    "So geht das nicht Bruder!",
 ];
 
 // ===== DIFFICULTY & SCORING =====
@@ -219,7 +219,12 @@ const Audio = (() => {
         click()    { tone(800,0.02,'square',0.06); },
         // Ambient döner shop sounds
         ambientSizzle() { noise(0.5, 0.02); },
-        doorBell()  { tone(1200,0.08,'sine',0.08); setTimeout(()=>tone(900,0.1,'sine',0.07),100); },
+        doorBell()  {
+            // Classic shop door Klingel: bright ding-dong
+            tone(1318,0.12,'sine',0.15); // high ding
+            setTimeout(()=>tone(1046,0.15,'sine',0.13),120); // lower dong
+            setTimeout(()=>tone(1318,0.06,'sine',0.08),280); // faint echo ding
+        },
         cashRegister() { tone(1000,0.03,'square',0.08); noise(0.04,0.05);
                         setTimeout(()=>{ tone(1200,0.03,'square',0.07); noise(0.03,0.04); },60); },
         resume()   { if(ctx&&ctx.state==='suspended') ctx.resume(); }
@@ -424,23 +429,65 @@ function switchCustomer(dir) {
     if (cust) showSpeechBubble(cust, cust.dialogue);
 }
 
-// ===== SPEECH BUBBLE SYSTEM =====
+// ===== SPEECH BUBBLE SYSTEM + TEXT-TO-SPEECH =====
 let activeSpeechTimer = null;
+let ttsVoices = [];
+let ttsReady = false;
+
+// Load voices (async on some browsers)
+function loadVoices() {
+    ttsVoices = speechSynthesis.getVoices();
+    ttsReady = ttsVoices.length > 0;
+}
+if ('speechSynthesis' in window) {
+    loadVoices();
+    speechSynthesis.onvoiceschanged = loadVoices;
+}
+
+function speakText(text, custType) {
+    if (!('speechSynthesis' in window)) return;
+    // Cancel any ongoing speech
+    speechSynthesis.cancel();
+
+    const utter = new SpeechSynthesisUtterance(text);
+
+    // German voices only — all dialogues are in German
+    let voice = ttsVoices.find(v => v.lang === 'de-DE');
+    if (!voice) voice = ttsVoices.find(v => v.lang.startsWith('de'));
+    if (voice) utter.voice = voice;
+    utter.lang = 'de-DE';
+
+    // Vary pitch and rate by customer type for personality
+    const vibe = custType ? custType.vibe : 'chill';
+    switch (vibe) {
+        case 'impatient': utter.rate = 1.4; utter.pitch = 1.3; break;
+        case 'demanding': utter.rate = 0.85; utter.pitch = 0.7; break;
+        case 'chatty':    utter.rate = 1.15; utter.pitch = 1.1; break;
+        case 'nice':      utter.rate = 1.0;  utter.pitch = 1.2; break;
+        case 'polite':    utter.rate = 0.95; utter.pitch = 1.0; break;
+        case 'confused':  utter.rate = 0.9;  utter.pitch = 1.15; break;
+        case 'loyal':     utter.rate = 1.05; utter.pitch = 0.9; break;
+        default:          utter.rate = 1.05; utter.pitch = 1.0; break;
+    }
+    // Add slight randomness
+    utter.rate += (Math.random() - 0.5) * 0.15;
+    utter.pitch += (Math.random() - 0.5) * 0.15;
+    utter.volume = 0.85;
+
+    speechSynthesis.speak(utter);
+}
 
 function showSpeechBubble(cust, text) {
     if (!cust) return;
     cust.lastSpeech = text;
-    // Play speech blip sounds (like talking)
-    const words = text.split(' ').length;
-    for (let i = 0; i < Math.min(words, 6); i++) {
-        setTimeout(() => Audio.speech(), i * 60);
-    }
+    // Speak it out loud!
+    speakText(text, cust.type);
     renderCustomers();
-    // Auto-hide speech after a while
+    // Auto-hide speech bubble after speech ends or timeout
     if (activeSpeechTimer) clearTimeout(activeSpeechTimer);
     activeSpeechTimer = setTimeout(() => {
         if (cust && !cust.leaving) { cust.lastSpeech = ''; renderCustomers(); }
-    }, 3500);
+    }, 4500);
 }
 
 function updateCustomers(now) {
@@ -1164,6 +1211,7 @@ function gameOver() {
     S.running = false;
     FX.stop();
     Audio.gameOver();
+    if ('speechSynthesis' in window) speechSynthesis.cancel();
 
     const isNew = S.score > S.highScore;
     if (isNew) { S.highScore = S.score; saveHS(); setTimeout(() => Audio.highScore(), 800); }
