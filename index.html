@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1a0f08">
+    <title>Döner Dash — Kebab Chaos</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="game-container">
+    <canvas id="fx-canvas"></canvas>
+
+    <!-- ========== TITLE SCREEN ========== -->
+    <div id="title-screen" class="screen active">
+        <div class="title-spit">
+            <div class="ts-pole"></div>
+            <div class="ts-meat"><div class="tsl m1"></div><div class="tsl m2"></div><div class="tsl m3"></div><div class="tsl m4"></div><div class="tsl m5"></div></div>
+            <div class="ts-flame">🔥🔥🔥</div>
+        </div>
+        <h1 class="main-title">DÖNER<br>DASH</h1>
+        <div class="title-sub">🇹🇷 KEBAB CHAOS 🇩🇪</div>
+        <div class="title-quote">"Bruder, mach schnell! Yallah!"</div>
+        <div class="title-hs">HIGH SCORE: <span id="title-hs">0</span></div>
+        <button id="start-btn" class="big-btn">🔪 LOS GEHT'S!</button>
+        <div class="title-controls">
+            <span>Q/W Ofen</span>
+            <span>E Schneiden</span>
+            <span>1-6 Zutaten</span>
+            <span>A/S/D/F Getränke</span>
+            <span>TAB Kunde wechseln</span>
+            <span>SPACE Servieren</span>
+        </div>
+    </div>
+
+    <!-- ========== GAME SCREEN ========== -->
+    <div id="game-screen" class="screen">
+        <!-- HUD -->
+        <div id="hud">
+            <div class="hud-cell"><div class="hud-lbl">SCORE</div><div id="hud-score" class="hud-val">0</div></div>
+            <div class="hud-cell"><div class="hud-lbl">COMBO</div><div id="hud-combo" class="hud-val">x1</div></div>
+            <div class="hud-cell"><div class="hud-lbl">LEVEL</div><div id="hud-level" class="hud-val">1</div></div>
+            <div class="hud-cell"><div class="hud-lbl">LEBEN</div><div id="hud-lives" class="hud-val"></div></div>
+        </div>
+
+        <!-- Event banner -->
+        <div id="event-banner" class="hidden"></div>
+
+        <!-- Customer switch hint + queue -->
+        <div id="cust-switch-bar">
+            <span class="switch-hint">← → / TAB: Kunde wechseln</span>
+            <span class="swipe-hint">👆 Swipe / Tap: Kunde wechseln</span>
+        </div>
+        <div id="customer-queue"></div>
+
+        <!-- 4-station grid -->
+        <div id="stations">
+            <!-- OVEN -->
+            <div class="station st-oven" id="st-oven">
+                <div class="st-head">🔥 OFEN <kbd>Q</kbd><kbd>W</kbd></div>
+                <div class="st-body">
+                    <div id="oven-box">
+                        <div id="oven-bread-vis"></div>
+                        <div id="oven-bar-bg"><div id="oven-bar"></div></div>
+                        <div id="oven-status"></div>
+                    </div>
+                    <div id="bread-stock">🍞 ×<span id="bread-count">0</span></div>
+                </div>
+                <div class="st-btns">
+                    <button class="st-btn" data-action="oven-in"><span class="key-label">Q </span>🍞 REIN</button>
+                    <button class="st-btn" data-action="oven-out"><span class="key-label">W </span>🥖 RAUS</button>
+                </div>
+            </div>
+
+            <!-- ASSEMBLY -->
+            <div class="station st-assembly" id="st-assembly">
+                <div class="st-head">🥙 BESTELLUNG <kbd>1-6</kbd></div>
+                <div class="st-body">
+                    <div id="order-checklist"></div>
+                    <div id="ing-btns">
+                        <button class="ing-btn" data-ing="0">🥬<span>1</span></button>
+                        <button class="ing-btn" data-ing="1">🍅<span>2</span></button>
+                        <button class="ing-btn" data-ing="2">🧅<span>3</span></button>
+                        <button class="ing-btn" data-ing="3">🥗<span>4</span></button>
+                        <button class="ing-btn" data-ing="4">🧄<span>5</span></button>
+                        <button class="ing-btn" data-ing="5">🌶️<span>6</span></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLICER -->
+            <div class="station st-slicer" id="st-slicer">
+                <div class="st-head">🔪 SPIESS <kbd>E</kbd></div>
+                <div class="st-body">
+                    <div id="slicer-vis">
+                        <div id="spit-pole"></div>
+                        <div id="spit-meat"></div>
+                        <div id="spit-knife">🔪</div>
+                    </div>
+                    <div id="meat-bar-wrap">
+                        <div id="meat-label">FLEISCH</div>
+                        <div id="meat-bar-bg"><div id="meat-bar"></div></div>
+                        <div id="meat-val"></div>
+                    </div>
+                </div>
+                <button class="st-btn slice-btn" data-action="slice"><span class="key-label">E </span>🔪 SCHNEIDEN!</button>
+            </div>
+
+            <!-- DRINKS -->
+            <div class="station st-drinks" id="st-drinks">
+                <div class="st-head">🥤 GETRÄNKE <kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><kbd>F</kbd></div>
+                <div class="st-body">
+                    <div id="drink-needed"></div>
+                    <div id="drink-status"></div>
+                </div>
+                <div class="st-btns drink-btns drink-grid">
+                    <button class="st-btn drink-btn" data-action="ayran"><span class="key-label">A </span>🥛 Ayran</button>
+                    <button class="st-btn drink-btn" data-action="cola"><span class="key-label">S </span>🥤 Cola</button>
+                    <button class="st-btn drink-btn" data-action="cay"><span class="key-label">D </span>🫖 Çay</button>
+                    <button class="st-btn drink-btn" data-action="salgam"><span class="key-label">F </span>🧃 Şalgam</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Serve bar -->
+        <div id="serve-bar">
+            <div id="serve-status"></div>
+            <button id="serve-btn" class="big-btn serve-big"><span class="key-label">SPACE </span>🥙 SERVIEREN!</button>
+        </div>
+
+        <div id="feedback"></div>
+    </div>
+
+    <!-- ========== UPGRADE SCREEN ========== -->
+    <div id="upgrade-screen" class="screen">
+        <h2 class="upgrade-title">⭐ LEVEL UP! ⭐</h2>
+        <div id="upgrade-sub"></div>
+        <div id="upgrade-options"></div>
+    </div>
+
+    <!-- ========== GAME OVER SCREEN ========== -->
+    <div id="gameover-screen" class="screen">
+        <div class="go-icon">🥙</div>
+        <h1 class="go-title">LADEN ZU!</h1>
+        <div class="go-sub">GAME OVER</div>
+        <div class="go-score">SCORE: <span id="go-score">0</span></div>
+        <div class="go-stats">
+            <div>🥙 Döner serviert: <span id="go-orders">0</span></div>
+            <div>🔥 Bester Combo: <span id="go-combo">0</span></div>
+            <div>⭐ Level erreicht: <span id="go-level">0</span></div>
+        </div>
+        <div id="go-newhs" class="go-newhs hidden">★ NEUER HIGHSCORE ★</div>
+        <div class="go-hs">HIGH SCORE: <span id="go-hs">0</span></div>
+        <button id="restart-btn" class="big-btn">🔄 NOCHMAL!</button>
+    </div>
+</div>
+<script src="game.js"></script>
+</body>
+</html>
