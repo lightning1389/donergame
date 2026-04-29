@@ -29,7 +29,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f0a06;
 #fx-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:200}
 
 .screen{position:absolute;top:0;left:0;width:100%;height:100%;display:none;
-    flex-direction:column;align-items:center;justify-content:center;padding:16px;z-index:10}
+    flex-direction:column;align-items:center;justify-content:center;padding:16px;z-index:10;
+    overflow-y:auto}
 .screen.active{display:flex}
 
 /* CRT scanlines */
@@ -103,11 +104,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f0a06;
 #cust-switch-bar{width:100%;text-align:center;padding:2px 6px;background:rgba(255,215,0,.08);
     border-bottom:1px solid rgba(255,215,0,.15);flex-shrink:0;z-index:5}
 .switch-hint{font-size:.4rem;color:var(--gold);letter-spacing:2px;opacity:.7}
-#customer-queue{width:100%;display:flex;gap:4px;padding:4px 6px;overflow-x:auto;flex-shrink:0;
-    background:rgba(0,0,0,.3);border-bottom:1px solid var(--st-bdr);z-index:5;min-height:82px}
-.cust-card{flex:0 0 auto;width:145px;padding:4px 6px;border-radius:6px;background:var(--st-bg);
+#customer-queue{width:100%;display:flex;gap:4px;padding:4px 6px;overflow-x:auto;overflow-y:visible;flex-shrink:0;
+    background:rgba(0,0,0,.3);border-bottom:1px solid var(--st-bdr);z-index:5;min-height:90px}
+.cust-card{flex:0 0 auto;width:150px;padding:4px 6px;border-radius:6px;background:var(--st-bg);
     border:2px solid var(--st-bdr);position:relative;display:flex;flex-direction:column;gap:2px;
-    transition:border-color .2s,box-shadow .2s,transform .15s}
+    transition:border-color .2s,box-shadow .2s,transform .15s;overflow:hidden}
 .cust-card:hover:not(.leaving){border-color:var(--cream);transform:translateY(-1px)}
 .cust-card.active{border-color:var(--gold);box-shadow:0 0 12px rgba(255,215,0,.35)}
 .cust-card.leaving{animation:custLeave .6s ease-in forwards}
@@ -121,12 +122,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f0a06;
 .cust-active-badge{font-size:.4rem;color:var(--gold);animation:activePulse .6s infinite alternate}
 @keyframes activePulse{0%{opacity:.5}100%{opacity:1}}
 /* Speech bubble */
-.cust-speech{font-size:.38rem;color:var(--dim);line-height:1.3;max-height:16px;overflow:hidden}
-.cust-speech-bubble{font-size:.4rem;color:var(--cream);line-height:1.3;max-height:28px;overflow:hidden;
-    background:rgba(255,215,0,.12);border:1px solid rgba(255,215,0,.25);border-radius:4px;
-    padding:2px 4px;position:relative;animation:speechIn .25s ease-out;
-    text-shadow:0 0 4px rgba(255,215,0,.2)}
-@keyframes speechIn{0%{opacity:0;transform:scale(.8) translateY(4px)}100%{opacity:1;transform:none}}
+.cust-speech{font-size:.55rem;color:var(--dim);line-height:1.3;max-height:22px;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap}
+.cust-speech-bubble{font-size:.6rem;color:var(--cream);line-height:1.25;max-height:34px;overflow:hidden;
+    background:rgba(255,215,0,.15);border:1px solid rgba(255,215,0,.3);border-radius:5px;
+    padding:2px 5px;position:relative;word-break:break-word;
+    text-shadow:0 0 6px rgba(255,215,0,.3);font-weight:bold}
+.cust-speech-bubble.speech-enter{animation:speechBlowUp .4s cubic-bezier(.17,.67,.38,1.4) forwards}
+@keyframes speechBlowUp{0%{opacity:0;transform:scale(.3) translateY(8px)}60%{opacity:1;transform:scale(1.15) translateY(-2px)}100%{opacity:1;transform:scale(1) translateY(0)}}
 /* Order progress on customer card */
 .cust-order-progress{font-size:.38rem;color:var(--dim);letter-spacing:1px}
 .cust-patience{height:4px;background:rgba(0,0,0,.4);border-radius:2px;overflow:hidden}
@@ -289,6 +292,36 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f0a06;
 @keyframes hsBlink{0%{opacity:.4;transform:scale(.97)}100%{opacity:1;transform:scale(1.03)}}
 .go-hs{font-size:.8rem;color:var(--cyan);margin-top:8px}
 
+/* Name input */
+.go-name-wrap{display:flex;gap:6px;align-items:center;margin-top:10px}
+.go-name-input{font-family:inherit;font-size:.7rem;padding:6px 10px;width:140px;max-width:50%;
+    background:var(--st-bg);border:2px solid var(--st-bdr);border-radius:6px;
+    color:var(--gold);text-align:center;letter-spacing:1px;outline:none}
+.go-name-input:focus{border-color:var(--gold);box-shadow:0 0 8px rgba(255,215,0,.3)}
+.go-name-input::placeholder{color:var(--dim);font-size:.55rem}
+.go-name-input:disabled{opacity:.5}
+.go-submit-btn{font-family:inherit;font-size:.6rem;font-weight:bold;padding:6px 12px;
+    background:linear-gradient(180deg,var(--gold),var(--orange));color:var(--bg);
+    border:none;border-radius:6px;cursor:pointer;letter-spacing:1px;
+    box-shadow:0 2px 0 #b36600;transition:transform .1s}
+.go-submit-btn:hover{transform:translateY(-1px)}
+.go-submit-btn:active{transform:translateY(1px)}
+.go-submit-btn:disabled{opacity:.5;cursor:default;transform:none}
+
+/* Leaderboard */
+.leaderboard{width:100%;max-width:300px;margin-top:10px;background:rgba(0,0,0,.3);
+    border:1px solid var(--st-bdr);border-radius:8px;padding:8px;max-height:180px;overflow-y:auto}
+.lb-title{font-size:.7rem;color:var(--gold);text-align:center;letter-spacing:3px;font-weight:bold;
+    margin-bottom:6px;text-shadow:0 0 6px rgba(255,215,0,.3)}
+.lb-row{display:flex;align-items:center;gap:6px;padding:3px 6px;font-size:.6rem;
+    border-bottom:1px solid rgba(255,255,255,.05)}
+.lb-row:last-child{border-bottom:none}
+.lb-top{color:var(--gold);font-weight:bold}
+.lb-rank{min-width:24px;text-align:center}
+.lb-name{flex:1;color:var(--cream);letter-spacing:1px}
+.lb-score{color:var(--gold);font-weight:bold;letter-spacing:1px}
+.lb-empty{font-size:.55rem;color:var(--dim);text-align:center;padding:8px}
+
 /* ====== RESPONSIVE — MOBILE FIRST ====== */
 
 /* Hide keyboard hints on touch devices */
@@ -315,7 +348,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f0a06;
     .cust-card{width:120px;padding:3px 4px}
     .cust-avatar{font-size:1rem}
     .cust-type{font-size:.32rem}
-    .cust-speech,.cust-speech-bubble{font-size:.34rem}
+    .cust-speech,.cust-speech-bubble{font-size:.5rem}
     .ing-btn{font-size:.9rem;padding:4px 1px}
     .ing-btn span{font-size:.38rem}
     .st-head{font-size:.42rem;padding:2px 4px}
@@ -345,7 +378,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f0a06;
 @media(max-height:600px){
     #customer-queue{min-height:60px;padding:2px 4px}
     .cust-card{width:110px;padding:2px 3px}
-    .cust-speech,.cust-speech-bubble{max-height:12px;font-size:.32rem}
+    .cust-speech,.cust-speech-bubble{max-height:18px;font-size:.48rem}
     .cust-order-progress{display:none}
     #cust-switch-bar{padding:1px 4px}
     #stations{gap:2px;padding:2px}

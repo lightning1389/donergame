@@ -146,6 +146,10 @@ const PTS_BURNED = -20;
 const PTS_CUSTOMER_LEFT = -50;
 
 const LS_KEY = 'donerChaosHS';
+const LS_NAME_KEY = 'donerChaosName';
+const LEADERBOARD_URL = 'https://jsonblob.com/api/jsonBlob/019ddae2-a4f2-7220-9836-44872f8a5aec';
+const MAX_LEADERBOARD = 10;
+const MAX_NAME_LEN = 10;
 
 // ===== UPGRADES =====
 const UPGRADE_POOL = [
@@ -335,6 +339,51 @@ function showScreen(scr) {
 // ===== LOCAL STORAGE =====
 function loadHS() { try { S.highScore = parseInt(localStorage.getItem(LS_KEY),10)||0; } catch(_){ S.highScore=0; } }
 function saveHS() { try { localStorage.setItem(LS_KEY, S.highScore.toString()); } catch(_){} }
+function loadName() { try { return localStorage.getItem(LS_NAME_KEY)||''; } catch(_){ return ''; } }
+function saveName(n) { try { localStorage.setItem(LS_NAME_KEY, n); } catch(_){} }
+
+// ===== GLOBAL LEADERBOARD =====
+let globalBoard = [];
+
+async function fetchLeaderboard() {
+    try {
+        const r = await fetch(LEADERBOARD_URL);
+        if (r.ok) globalBoard = await r.json();
+    } catch(_){ globalBoard = []; }
+    renderLeaderboard();
+}
+
+async function submitScore(name, score) {
+    if (!name || score <= 0) return;
+    try {
+        const r = await fetch(LEADERBOARD_URL);
+        if (!r.ok) return;
+        let board = await r.json();
+        if (!Array.isArray(board)) board = [];
+        board.push({ name: name.substring(0, MAX_NAME_LEN), score, date: new Date().toISOString().slice(0,10) });
+        board.sort((a,b) => b.score - a.score);
+        board = board.slice(0, MAX_LEADERBOARD);
+        await fetch(LEADERBOARD_URL, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(board)
+        });
+        globalBoard = board;
+        renderLeaderboard();
+    } catch(_){}
+}
+
+function renderLeaderboard() {
+    ['leaderboard-list', 'go-leaderboard-list'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (!globalBoard.length) { el.innerHTML = '<div class="lb-empty">Noch keine Eintr\u00e4ge!</div>'; return; }
+        el.innerHTML = globalBoard.map((e, i) => {
+            const medal = i === 0 ? '\ud83e\udd47' : i === 1 ? '\ud83e\udd48' : i === 2 ? '\ud83e\udd49' : `${i+1}.`;
+            return `<div class="lb-row${i < 3 ? ' lb-top' : ''}"><span class="lb-rank">${medal}</span><span class="lb-name">${e.name}</span><span class="lb-score">${e.score}</span></div>`;
+        }).join('');
+    });
+}
 
 // ===== HELPERS =====
 const rand = (a,b) => a + Math.floor(Math.random()*(b-a+1));
@@ -435,12 +484,15 @@ let activeSpeechTimer = null;
 function showSpeechBubble(cust, text) {
     if (!cust) return;
     cust.lastSpeech = text;
+    cust.speechAnimated = false; // reset so blow-up plays once
     // Play speech blip sounds (like talking)
     const words = text.split(' ').length;
     for (let i = 0; i < Math.min(words, 6); i++) {
         setTimeout(() => Audio.speech(), i * 60);
     }
     renderCustomers();
+    // Mark animated after first render so it won't replay
+    cust.speechAnimated = true;
     // Auto-hide speech after a while
     if (activeSpeechTimer) clearTimeout(activeSpeechTimer);
     activeSpeechTimer = setTimeout(() => {
@@ -792,7 +844,7 @@ function updateEvent(now) {
 // ===== UPGRADES =====
 
 function showUpgradeScreen() {
-    S.running = false;
+    // Game keeps running during upgrades! No S.running = false;
     // Pick 3 random upgrades not already applied
     const available = UPGRADE_POOL.filter(u => !S.appliedUpgrades.includes(u.id));
     const picks = [];
@@ -822,11 +874,9 @@ function showUpgradeScreen() {
 
 function resumeAfterUpgrade() {
     showScreen(DOM.gameScreen);
-    S.running = true;
-    S.lastTS = performance.now();
+    // Game was still running, just switch back to game screen
     showFB(`⭐ LEVEL ${S.level}!`, 'perfect');
     emitLevelFX();
-    requestAnimationFrame(gameLoop);
 }
 
 // ===== SCORING & FEEDBACK =====
@@ -901,7 +951,7 @@ function renderCustomers() {
                 <span class="cust-mood">${c.mood}</span>
                 ${switchHint}
             </div>
-            ${c.lastSpeech ? `<div class="cust-speech-bubble">"${c.lastSpeech}"</div>` : `<div class="cust-speech">"${c.dialogue.substring(0, 40)}…"</div>`}
+            ${c.lastSpeech ? `<div class="cust-speech-bubble${!c.speechAnimated ? ' speech-enter' : ''}">"${c.lastSpeech}"</div>` : `<div class="cust-speech">"${c.dialogue.substring(0, 40)}…"</div>`}
             <div class="cust-order-progress">${progress}${c.order.drink ? (drinkDone ? ' 🥤✓' : ' 🥤✗') : ''}</div>
             <div class="cust-patience"><div class="patience-fill${barCls}" style="width:${ratio*100}%"></div></div>`;
         // Click to switch to this customer
@@ -1180,7 +1230,20 @@ function gameOver() {
     DOM.goHS.textContent = S.highScore;
     DOM.goNewHS.classList.toggle('hidden', !isNew);
 
-    setTimeout(() => showScreen(DOM.gameoverScreen), 600);
+    // Name input for leaderboard
+    const nameInput = document.getElementById('go-name');
+    const submitBtn = document.getElementById('go-submit');
+    if (nameInput) {
+        nameInput.value = loadName();
+        nameInput.disabled = false;
+        submitBtn.disabled = false;
+        submitBtn.textContent = '📤 EINTRAGEN';
+    }
+
+    setTimeout(() => {
+        showScreen(DOM.gameoverScreen);
+        fetchLeaderboard();
+    }, 600);
 }
 
 // ===== INPUT =====
@@ -1289,12 +1352,27 @@ window.addEventListener('resize', () => {
     resizeTimer = setTimeout(() => { FX.resize(); }, 150);
 });
 
+// ===== LEADERBOARD SUBMIT HANDLER =====
+document.addEventListener('click', e => {
+    if (e.target.id === 'go-submit') {
+        const nameInput = document.getElementById('go-name');
+        const name = (nameInput.value || '').trim().substring(0, MAX_NAME_LEN);
+        if (!name) { nameInput.focus(); return; }
+        saveName(name);
+        e.target.disabled = true;
+        e.target.textContent = '✅ GESPEICHERT';
+        nameInput.disabled = true;
+        submitScore(name, S.score);
+    }
+});
+
 // ===== INIT =====
 function init() {
     S = freshState();
     loadHS();
     DOM.titleHS.textContent = S.highScore;
     showScreen(DOM.titleScreen);
+    fetchLeaderboard();
 }
 
 init();

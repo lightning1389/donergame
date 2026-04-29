@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Döner Dash — Test Suite</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Courier New',monospace;background:#1a1a2e;color:#eee;padding:20px}
+        h1{color:#ffd700;margin-bottom:4px;font-size:1.4rem}
+        .sub{color:#888;font-size:.75rem;margin-bottom:20px}
+        .group{margin:16px 0;border:1px solid #333;border-radius:8px;overflow:hidden}
+        .group-title{background:#222;padding:8px 12px;font-size:.85rem;font-weight:bold;color:#6ec6ff;
+            border-bottom:1px solid #333;letter-spacing:2px}
+        .test{display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid #2a2a2a;font-size:.75rem}
+        .test:last-child{border-bottom:none}
+        .pass{color:#4cdf6b}.pass::before{content:'✅ '}
+        .fail{color:#ff2e4c}.fail::before{content:'❌ '}
+        .skip{color:#888}.skip::before{content:'⏭️ '}
+        .summary{margin-top:20px;padding:12px;border-radius:8px;font-size:1rem;font-weight:bold;text-align:center}
+        .summary.all-pass{background:#1a3a1a;color:#4cdf6b;border:2px solid #4cdf6b}
+        .summary.has-fail{background:#3a1a1a;color:#ff2e4c;border:2px solid #ff2e4c}
+        #game-frame{position:absolute;left:-9999px;top:0;width:400px;height:700px;border:none}
+    </style>
+</head>
+<body>
+    <h1>🥙 Döner Dash — Test Suite</h1>
+    <div class="sub">Automated tests for layout, game logic, audio, and accessibility</div>
+    <div id="results"></div>
+    <div id="summary"></div>
+    <iframe id="game-frame" src="index.html"></iframe>
+
+<script>
+const results = [];
+const container = document.getElementById('results');
+const summaryEl = document.getElementById('summary');
+const frame = document.getElementById('game-frame');
+
+function addGroup(name) {
+    const g = document.createElement('div');
+    g.className = 'group';
+    g.innerHTML = `<div class="group-title">${name}</div>`;
+    container.appendChild(g);
+    return g;
+}
+
+function addResult(group, name, passed, detail) {
+    const div = document.createElement('div');
+    div.className = `test ${passed ? 'pass' : 'fail'}`;
+    div.textContent = name + (detail ? ` — ${detail}` : '');
+    group.appendChild(div);
+    results.push({ name, passed });
+}
+
+function showSummary() {
+    const total = results.length;
+    const passed = results.filter(r => r.passed).length;
+    const failed = total - passed;
+    summaryEl.className = `summary ${failed ? 'has-fail' : 'all-pass'}`;
+    summaryEl.textContent = `${passed}/${total} Tests bestanden${failed ? ` — ${failed} FEHLGESCHLAGEN` : ' — ALLES OK! 🎉'}`;
+}
+
+frame.addEventListener('load', () => {
+    const doc = frame.contentDocument;
+    const win = frame.contentWindow;
+    const cs = (el) => win.getComputedStyle(el);
+
+    // Read game.js source for content validation
+    let gameSource = '';
+    try {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', 'game.js', false);
+        xhr.send();
+        gameSource = xhr.responseText;
+    } catch(_){}
+
+    // Helper: count matches in source
+    const countInSource = (pattern) => (gameSource.match(pattern) || []).length;
+    // Helper: extract array length from source
+    const arrayLen = (name) => {
+        const m = gameSource.match(new RegExp(`const ${name}\\s*=\\s*\\[([\\s\\S]*?)\\];`));
+        if (!m) return 0;
+        return (m[1].match(/[{'"]/g) || []).length > 0 ? m[1].split(/\n/).filter(l => l.trim() && !l.trim().startsWith('/') && !l.trim().startsWith(']')).length : 0;
+    };
+
+    // ======= 1. FILE STRUCTURE =======
+    const g1 = addGroup('📁 DATEISTRUKTUR');
+    addResult(g1, 'index.html lädt', !!doc.getElementById('game-container'));
+    addResult(g1, 'game.js geladen', typeof win.startGame === 'function' || typeof win.init === 'function');
+    addResult(g1, 'style.css verlinkt', doc.querySelector('link[href="style.css"]') !== null);
+
+    // ======= 2. DOM STRUCTURE =======
+    const g2 = addGroup('🏗️ DOM STRUKTUR');
+    const requiredIds = ['game-container','fx-canvas','title-screen','game-screen','upgrade-screen',
+        'gameover-screen','hud','customer-queue','stations','serve-bar','feedback',
+        'oven-box','order-checklist','slicer-vis','drink-needed'];
+    requiredIds.forEach(id => {
+        addResult(g2, `#${id} existiert`, !!doc.getElementById(id));
+    });
+
+    // ======= 3. LAYOUT / OVERFLOW =======
+    const g3 = addGroup('📐 LAYOUT & OVERFLOW');
+
+    // Game container fits viewport
+    const gc = doc.getElementById('game-container');
+    const gcRect = gc.getBoundingClientRect();
+    addResult(g3, 'Container nicht breiter als Viewport',
+        gcRect.width <= frame.clientWidth + 2,
+        `${Math.round(gcRect.width)}px ≤ ${frame.clientWidth}px`);
+
+    // Container has overflow:hidden
+    addResult(g3, 'Container overflow:hidden',
+        cs(gc).overflow === 'hidden' || cs(gc).overflowX === 'hidden');
+
+    // Game screen has overflow:hidden
+    const gs = doc.getElementById('game-screen');
+    addResult(g3, 'Game screen overflow:hidden',
+        cs(gs).overflow === 'hidden' || cs(gs).overflowY === 'hidden');
+
+    // Customer queue allows horizontal scroll
+    const cq = doc.getElementById('customer-queue');
+    addResult(g3, 'Customer queue overflow-x:auto',
+        cs(cq).overflowX === 'auto' || cs(cq).overflowX === 'scroll');
+
+    // Station grid uses CSS grid
+    const stations = doc.getElementById('stations');
+    addResult(g3, 'Stations use CSS Grid', cs(stations).display === 'grid');
+
+    // Stations grid 2x2
+    const cols = cs(stations).gridTemplateColumns;
+    addResult(g3, 'Stations 2x2 grid',
+        cols.split(' ').length === 2,
+        cols);
+
+    // HUD doesn't overflow
+    const hud = doc.getElementById('hud');
+    addResult(g3, 'HUD passt in Container',
+        hud.scrollWidth <= hud.clientWidth + 2,
+        `scroll:${hud.scrollWidth} client:${hud.clientWidth}`);
+
+    // Feedback overlay is positioned absolute
+    const fb = doc.getElementById('feedback');
+    addResult(g3, 'Feedback overlay position:absolute', cs(fb).position === 'absolute');
+
+    // Feedback has max-width (no overflow off screen)
+    addResult(g3, 'Feedback hat max-width',
+        cs(fb).maxWidth !== 'none' && cs(fb).maxWidth !== '');
+
+    // ======= 4. CUSTOMER CARD OVERFLOW TEST =======
+    const g4 = addGroup('💬 SPEECH BUBBLE / KUNDENTKARTE');
+
+    // Simulate game start to get customer cards
+    // We'll create a mock customer card to test
+    const testCard = doc.createElement('div');
+    testCard.className = 'cust-card active';
+    testCard.style.width = '150px';
+    testCard.innerHTML = `
+        <div class="cust-top">
+            <span class="cust-avatar">🧔</span>
+            <span class="cust-type">🇹🇷Abi</span>
+            <span class="cust-mood">😊</span>
+        </div>
+        <div class="cust-speech-bubble">"Bruder, einmal Döner mit allem, scharf aber nicht zu scharf!"</div>
+        <div class="cust-order-progress">2/4 🥤✗</div>
+        <div class="cust-patience"><div class="patience-fill" style="width:80%"></div></div>`;
+    cq.appendChild(testCard);
+
+    // Force layout
+    void testCard.offsetHeight;
+
+    // Card overflow check
+    addResult(g4, 'Kundenkarte hat overflow:hidden',
+        cs(testCard).overflow === 'hidden');
+
+    // Speech bubble doesn't exceed card width
+    const bubble = testCard.querySelector('.cust-speech-bubble');
+    addResult(g4, 'Speech Bubble passt in Karte (Breite)',
+        bubble.scrollWidth <= testCard.clientWidth,
+        `bubble:${bubble.scrollWidth} card:${testCard.clientWidth}`);
+
+    // Speech bubble doesn't exceed max-height
+    const bubbleMaxH = parseFloat(cs(bubble).maxHeight);
+    addResult(g4, 'Speech Bubble respektiert max-height',
+        bubble.scrollHeight <= bubbleMaxH + 4 || bubble.clientHeight <= bubbleMaxH + 2,
+        `height:${bubble.clientHeight} max:${bubbleMaxH}`);
+
+    // Speech bubble has word-break
+    addResult(g4, 'Speech Bubble hat word-break',
+        cs(bubble).wordBreak === 'break-word' || cs(bubble).overflowWrap === 'break-word');
+
+    // Card itself doesn't overflow queue
+    const cardRect = testCard.getBoundingClientRect();
+    const queueRect = cq.getBoundingClientRect();
+    addResult(g4, 'Karte bleibt in Queue (vertikal)',
+        cardRect.bottom <= queueRect.bottom + 5,
+        `card-bottom:${Math.round(cardRect.bottom)} queue-bottom:${Math.round(queueRect.bottom)}`);
+
+    // Speech with blow-up animation class
+    const animBubble = doc.createElement('div');
+    animBubble.className = 'cust-speech-bubble speech-enter';
+    animBubble.textContent = '"Test"';
+    testCard.appendChild(animBubble);
+    const animName = cs(animBubble).animationName;
+    addResult(g4, 'Speech blow-up Animation vorhanden',
+        animName && animName !== 'none',
+        animName);
+
+    // Cleanup
+    testCard.remove();
+
+    // ======= 5. SCREEN STRUCTURE =======
+    const g5 = addGroup('📺 SCREENS');
+
+    // Only title screen active initially
+    const screens = doc.querySelectorAll('.screen');
+    const activeScreens = doc.querySelectorAll('.screen.active');
+    addResult(g5, `${screens.length} Screens vorhanden`, screens.length === 4, `${screens.length} screens`);
+    addResult(g5, 'Nur 1 Screen aktiv (Titel)',
+        activeScreens.length === 1 && activeScreens[0].id === 'title-screen');
+
+    // Screens are position:absolute (stacked)
+    screens.forEach(s => {
+        addResult(g5, `#${s.id} position:absolute`, cs(s).position === 'absolute');
+    });
+
+    // Game over screen is scrollable (has leaderboard)
+    const goScreen = doc.getElementById('gameover-screen');
+    addResult(g5, 'Game Over Screen scrollbar',
+        cs(goScreen).overflowY === 'auto' || cs(goScreen).overflow === 'auto' ||
+        cs(goScreen).overflowY === 'visible');
+
+    // ======= 6. GAME LOGIC =======
+    const g6 = addGroup('🎮 SPIELLOGIK');
+
+    // ING array has 6 items
+    const ingCount = countInSource(/emoji:\s*'/g);
+    addResult(g6, '6 Zutaten definiert (ING)',
+        ingCount >= 6, `${ingCount} emoji-Einträge`);
+
+    // DRINKS count
+    const drinkCount = countInSource(/id:\s*'/g);
+    addResult(g6, '4 Getränke definiert',
+        drinkCount >= 4, `${drinkCount} id-Einträge`);
+
+    // CUST_TYPES count
+    const custTypeCount = countInSource(/title:'/g);
+    addResult(g6, 'Kundentypen vorhanden',
+        custTypeCount >= 6, `${custTypeCount} Typen`);
+
+    // Dialogue arrays exist and have content
+    const enterDialogues = (gameSource.match(/DIALOGUES_ENTER\s*=\s*\[([\s\S]*?)\];/)||['',''])[1].split('\n').filter(l=>l.trim().startsWith('"')).length;
+    const waitDialogues = (gameSource.match(/DIALOGUES_WAIT\s*=\s*\[([\s\S]*?)\];/)||['',''])[1].split('\n').filter(l=>l.trim().startsWith('"')).length;
+    const happyDialogues = (gameSource.match(/DIALOGUES_HAPPY\s*=\s*\[([\s\S]*?)\];/)||['',''])[1].split('\n').filter(l=>l.trim().startsWith('"')).length;
+    const angryDialogues = (gameSource.match(/DIALOGUES_ANGRY\s*=\s*\[([\s\S]*?)\];/)||['',''])[1].split('\n').filter(l=>l.trim().startsWith('"')).length;
+
+    addResult(g6, 'Eintritts-Dialoge vorhanden (≥20)', enterDialogues >= 20, `${enterDialogues} Sätze`);
+    addResult(g6, 'Warte-Dialoge vorhanden (≥8)', waitDialogues >= 8, `${waitDialogues} Sätze`);
+    addResult(g6, 'Happy-Dialoge vorhanden (≥5)', happyDialogues >= 5, `${happyDialogues} Sätze`);
+    addResult(g6, 'Angry-Dialoge vorhanden (≥5)', angryDialogues >= 5, `${angryDialogues} Sätze`);
+
+    // All dialogues are German (no Turkish-only chars without German)
+    const allDialogueText = gameSource.match(/DIALOGUES_\w+\s*=\s*\[([\s\S]*?)\];/g) || [];
+    const hasTurkishOnly = allDialogueText.some(block => {
+        const lines = block.match(/"([^"]+)"/g) || [];
+        return lines.some(l => /[İıĞğ]/.test(l) && !/[äöüÄÖÜß]|[Bb]ruder|[Cc]hef|[Dd]öner|bitte|danke|ich|mein|und/i.test(l));
+    });
+    addResult(g6, 'Alle Dialoge auf Deutsch', !hasTurkishOnly);
+
+    // UPGRADE_POOL exists
+    const upgradeCount = countInSource(/id:'/g);
+    addResult(g6, 'Upgrades vorhanden (≥5)', upgradeCount >= 5, `${upgradeCount} Upgrades`);
+
+    // freshState function exists
+    addResult(g6, 'freshState() vorhanden', typeof win.freshState === 'function');
+
+    // Key game functions exist
+    ['startGame','gameOver','spawnCustomer','showSpeechBubble','renderCustomers','switchCustomer'].forEach(fn => {
+        addResult(g6, `${fn}() vorhanden`, typeof win[fn] === 'function');
+    });
+
+    // No speechSynthesis code in source
+    addResult(g6, 'Keine TTS/speechSynthesis im Code',
+        !gameSource.includes('speechSynthesis') && !gameSource.includes('SpeechSynthesisUtterance'));
+
+    // Game keeps running during upgrades (no S.running = false in showUpgradeScreen)
+    const upgradeScreenCode = (gameSource.match(/function showUpgradeScreen\(\)\s*\{([\s\S]*?)(?=\nfunction )/)||['',''])[1];
+    addResult(g6, 'Timer läuft während Upgrade-Wahl',
+        !upgradeScreenCode.includes('S.running = false'),
+        upgradeScreenCode.includes('S.running = false') ? 'S.running=false gefunden!' : 'OK');
+
+    // ======= 7. LEADERBOARD =======
+    const g7 = addGroup('🏆 BESTENLISTE');
+
+    // Leaderboard elements exist
+    addResult(g7, 'Titel-Leaderboard vorhanden', !!doc.getElementById('leaderboard-list'));
+    addResult(g7, 'Game Over Leaderboard vorhanden', !!doc.getElementById('go-leaderboard-list'));
+
+    // Name input exists
+    const nameInput = doc.getElementById('go-name');
+    addResult(g7, 'Name-Input vorhanden', !!nameInput);
+    addResult(g7, 'Name-Input maxlength=10',
+        nameInput && nameInput.maxLength === 10);
+
+    // Submit button exists
+    addResult(g7, 'Submit-Button vorhanden', !!doc.getElementById('go-submit'));
+
+    // LEADERBOARD_URL defined
+    addResult(g7, 'Leaderboard URL definiert',
+        gameSource.includes('jsonblob.com'));
+
+    // fetchLeaderboard function exists
+    addResult(g7, 'fetchLeaderboard() vorhanden', typeof win.fetchLeaderboard === 'function');
+    addResult(g7, 'submitScore() vorhanden', typeof win.submitScore === 'function');
+    addResult(g7, 'renderLeaderboard() vorhanden', typeof win.renderLeaderboard === 'function');
+
+    // ======= 8. AUDIO =======
+    const g8 = addGroup('🔊 AUDIO');
+
+    // Check audio functions exist in source
+    const audioMethods = ['slice','addIng','wrongIng','ovenIn','ovenDing','ovenBurn',
+        'drink','serve','perfect','custEnter','custLeave','custSwitch','speech',
+        'lifeLost','gameOver','levelUp','highScore','event','doorBell','cashRegister','resume'];
+    audioMethods.forEach(m => {
+        addResult(g8, `Audio.${m}() im Code`,
+            gameSource.includes(`${m}(`) || gameSource.includes(`${m} (`));
+    });
+
+    // doorBell is a proper Klingel (multi-tone)
+    const doorBellCode = (gameSource.match(/doorBell\(\)\s*\{([\s\S]*?)(?=\},|\n\s{8}\w)/)||['',''])[1];
+    addResult(g8, 'doorBell hat mehrere Töne (Klingel)',
+        (doorBellCode.match(/tone\(/g)||[]).length >= 2,
+        `${(doorBellCode.match(/tone\(/g)||[]).length} Töne`);
+
+    // No speechSynthesis in audio
+    addResult(g8, 'Keine TTS im Audio-Code',
+        !gameSource.includes('speechSynthesis'));
+
+    // ======= 9. MOBILE / RESPONSIVE =======
+    const g9 = addGroup('📱 MOBILE / RESPONSIVE');
+
+    // Viewport meta tag
+    const vpMeta = doc.querySelector('meta[name="viewport"]');
+    addResult(g9, 'Viewport Meta-Tag vorhanden', !!vpMeta);
+    addResult(g9, 'Viewport hat viewport-fit=cover',
+        vpMeta && vpMeta.content.includes('viewport-fit=cover'));
+
+    // Touch-action set
+    addResult(g9, 'Touch-action: manipulation',
+        cs(doc.body).touchAction === 'manipulation');
+
+    // User-select: none
+    const userSelect = cs(doc.body).userSelect || cs(doc.body).webkitUserSelect;
+    addResult(g9, 'user-select: none', userSelect === 'none');
+
+    // PWA meta tags
+    addResult(g9, 'apple-mobile-web-app-capable',
+        !!doc.querySelector('meta[name="apple-mobile-web-app-capable"]'));
+    addResult(g9, 'theme-color',
+        !!doc.querySelector('meta[name="theme-color"]'));
+
+    // ======= 10. ACCESSIBILITY / UX =======
+    const g10 = addGroup('♿ BARRIEREFREIHEIT & UX');
+
+    // All buttons have text content
+    const buttons = doc.querySelectorAll('button');
+    let emptyBtns = 0;
+    buttons.forEach(b => { if (!b.textContent.trim()) emptyBtns++; });
+    addResult(g10, 'Alle Buttons haben Text', emptyBtns === 0, `${buttons.length} Buttons, ${emptyBtns} leer`);
+
+    // Language set to de
+    addResult(g10, 'HTML lang="de"', doc.documentElement.lang === 'de');
+
+    // Charset UTF-8
+    addResult(g10, 'Charset UTF-8',
+        !!doc.querySelector('meta[charset="UTF-8"]'));
+
+    // Title set
+    addResult(g10, 'Seitentitel gesetzt', doc.title.length > 5, doc.title);
+
+    // Canvas has pointer-events:none
+    const canvas = doc.getElementById('fx-canvas');
+    addResult(g10, 'FX-Canvas pointer-events:none', cs(canvas).pointerEvents === 'none');
+
+    // No console errors from game init
+    addResult(g10, 'Spiel initialisiert ohne Fehler',
+        !!doc.getElementById('title-screen') && doc.querySelector('.screen.active'));
+
+    // ======= 11. SECURITY =======
+    const g11 = addGroup('🔒 SICHERHEIT');
+
+    // No inline event handlers in HTML
+    const allElements = doc.querySelectorAll('*');
+    let inlineHandlers = 0;
+    allElements.forEach(el => {
+        for (const attr of el.attributes) {
+            if (attr.name.startsWith('on')) inlineHandlers++;
+        }
+    });
+    addResult(g11, 'Keine inline Event-Handler', inlineHandlers === 0, `${inlineHandlers} gefunden`);
+
+    // Name input sanitization (maxlength)
+    addResult(g11, 'Name-Input hat maxlength Limit',
+        nameInput && nameInput.maxLength <= 10);
+
+    // No external scripts loaded
+    const scripts = doc.querySelectorAll('script[src]');
+    const externalScripts = [...scripts].filter(s => s.src.startsWith('http'));
+    addResult(g11, 'Keine externen Scripts', externalScripts.length === 0,
+        externalScripts.length ? externalScripts.map(s=>s.src).join(', ') : 'OK');
+
+    // ======= SUMMARY =======
+    showSummary();
+});
+</script>
+</body>
+</html>

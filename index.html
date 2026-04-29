@@ -25,6 +25,10 @@
         <div class="title-sub">🇹🇷 KEBAB CHAOS 🇩🇪</div>
         <div class="title-quote">"Bruder, mach schnell! Yallah!"</div>
         <div class="title-hs">HIGH SCORE: <span id="title-hs">0</span></div>
+        <div id="title-leaderboard" class="leaderboard">
+            <div class="lb-title">🏆 BESTENLISTE</div>
+            <div id="leaderboard-list"></div>
+        </div>
         <button id="start-btn" class="big-btn">🔪 LOS GEHT'S!</button>
         <div class="title-controls">
             <span>Q/W Ofen</span>
@@ -154,6 +158,14 @@
         </div>
         <div id="go-newhs" class="go-newhs hidden">★ NEUER HIGHSCORE ★</div>
         <div class="go-hs">HIGH SCORE: <span id="go-hs">0</span></div>
+        <div class="go-name-wrap">
+            <input id="go-name" type="text" maxlength="10" placeholder="Dein Name (max 10)" class="go-name-input" autocomplete="off">
+            <button id="go-submit" class="go-submit-btn">📤 EINTRAGEN</button>
+        </div>
+        <div id="go-leaderboard" class="leaderboard">
+            <div class="lb-title">🏆 BESTENLISTE</div>
+            <div id="go-leaderboard-list"></div>
+        </div>
         <button id="restart-btn" class="big-btn">🔄 NOCHMAL!</button>
     </div>
 </div>
