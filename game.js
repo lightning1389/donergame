@@ -147,9 +147,9 @@ const PTS_CUSTOMER_LEFT = -50;
 
 const LS_KEY = 'donerChaosHS';
 const LS_NAME_KEY = 'donerChaosName';
-const LEADERBOARD_URL = 'https://jsonblob.com/api/jsonBlob/019ddae2-a4f2-7220-9836-44872f8a5aec';
 const MAX_LEADERBOARD = 10;
 const MAX_NAME_LEN = 10;
+const FIREBASE_DB = 'https://donerdash-9e39d-default-rtdb.firebaseio.com';
 
 // ===== UPGRADES =====
 const UPGRADE_POOL = [
@@ -342,13 +342,19 @@ function saveHS() { try { localStorage.setItem(LS_KEY, S.highScore.toString()); 
 function loadName() { try { return localStorage.getItem(LS_NAME_KEY)||''; } catch(_){ return ''; } }
 function saveName(n) { try { localStorage.setItem(LS_NAME_KEY, n); } catch(_){} }
 
-// ===== GLOBAL LEADERBOARD =====
+// ===== GLOBAL LEADERBOARD (Firebase REST API) =====
 let globalBoard = [];
 
 async function fetchLeaderboard() {
     try {
-        const r = await fetch(LEADERBOARD_URL);
-        if (r.ok) globalBoard = await r.json();
+        const r = await fetch(`${FIREBASE_DB}/leaderboard.json`);
+        if (!r.ok) { globalBoard = []; renderLeaderboard(); return; }
+        const data = await r.json();
+        if (data) {
+            globalBoard = Object.values(data).sort((a, b) => b.score - a.score);
+        } else {
+            globalBoard = [];
+        }
     } catch(_){ globalBoard = []; }
     renderLeaderboard();
 }
@@ -356,31 +362,49 @@ async function fetchLeaderboard() {
 async function submitScore(name, score) {
     if (!name || score <= 0) return;
     try {
-        const r = await fetch(LEADERBOARD_URL);
-        if (!r.ok) return;
-        let board = await r.json();
-        if (!Array.isArray(board)) board = [];
-        board.push({ name: name.substring(0, MAX_NAME_LEN), score, date: new Date().toISOString().slice(0,10) });
-        board.sort((a,b) => b.score - a.score);
-        board = board.slice(0, MAX_LEADERBOARD);
-        await fetch(LEADERBOARD_URL, {
-            method: 'PUT',
+        const entry = {
+            name: name.substring(0, MAX_NAME_LEN),
+            score,
+            date: new Date().toISOString().slice(0, 10)
+        };
+        await fetch(`${FIREBASE_DB}/leaderboard.json`, {
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(board)
+            body: JSON.stringify(entry)
         });
-        globalBoard = board;
+        // Re-fetch to get updated board and trim old entries
+        const r = await fetch(`${FIREBASE_DB}/leaderboard.json`);
+        if (!r.ok) return;
+        const data = await r.json();
+        if (data) {
+            const all = Object.entries(data).map(([k, v]) => ({ ...v, _key: k }));
+            all.sort((a, b) => b.score - a.score);
+            globalBoard = all.slice(0, MAX_LEADERBOARD);
+            // Remove entries outside top list
+            const toRemove = all.slice(MAX_LEADERBOARD);
+            if (toRemove.length > 0) {
+                const updates = {};
+                toRemove.forEach(e => { updates[e._key] = null; });
+                await fetch(`${FIREBASE_DB}/leaderboard.json`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updates)
+                });
+            }
+        }
         renderLeaderboard();
     } catch(_){}
 }
 
 function renderLeaderboard() {
+    const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     ['leaderboard-list', 'go-leaderboard-list'].forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
         if (!globalBoard.length) { el.innerHTML = '<div class="lb-empty">Noch keine Eintr\u00e4ge!</div>'; return; }
         el.innerHTML = globalBoard.map((e, i) => {
             const medal = i === 0 ? '\ud83e\udd47' : i === 1 ? '\ud83e\udd48' : i === 2 ? '\ud83e\udd49' : `${i+1}.`;
-            return `<div class="lb-row${i < 3 ? ' lb-top' : ''}"><span class="lb-rank">${medal}</span><span class="lb-name">${e.name}</span><span class="lb-score">${e.score}</span></div>`;
+            return `<div class="lb-row${i < 3 ? ' lb-top' : ''}"><span class="lb-rank">${medal}</span><span class="lb-name">${esc(e.name)}</span><span class="lb-score">${e.score}</span></div>`;
         }).join('');
     });
 }
