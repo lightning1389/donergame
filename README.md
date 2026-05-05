@@ -1,5 +1,9 @@
 # 🥙 Döner Dash
 
+[![CI](https://github.com/lightning1389/donergame/actions/workflows/ci.yml/badge.svg)](https://github.com/lightning1389/donergame/actions/workflows/ci.yml)
+![Tests](https://img.shields.io/badge/tests-130%20passed-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-blue)
+
 A retro arcade browser game where you run a döner kebab shop under time pressure. Fill customer orders by adding the right ingredients before time runs out!
 
 ## How to Play
