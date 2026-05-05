@@ -1275,6 +1275,16 @@ function gameOver() {
 document.addEventListener('keydown', e => {
     const key = e.key.toLowerCase();
 
+    // Don't intercept keys when typing in an input field
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        if (key === 'enter') {
+            e.preventDefault();
+            const submitBtn = document.getElementById('go-submit');
+            if (submitBtn && !submitBtn.disabled) submitBtn.click();
+        }
+        return;
+    }
+
     // Prevent scroll on game keys
     if (['1','2','3','4','5','6','q','w','e','a','s','d','f',' ','enter','tab','arrowleft','arrowright'].includes(key)) e.preventDefault();
 
